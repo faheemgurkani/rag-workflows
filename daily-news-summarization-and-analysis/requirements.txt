@@ -1,0 +1,13 @@
+python-dotenv 
+bs4
+fuzzywuzzy 
+python-Levenshtein 
+langdetect
+spacy 
+tf-keras 
+torch
+keybert 
+textwrap3
+transformers
+faiss-cpu
+titlecase
