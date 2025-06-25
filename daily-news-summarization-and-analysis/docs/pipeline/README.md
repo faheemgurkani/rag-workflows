@@ -1,117 +1,118 @@
-# Project Pipeline: Personalized News Summarizer (RAG Workflow)**  
+# Daily News Summarization and Analysis - RAG Pipeline
 
-### **1️⃣ Data Ingestion (Collection & Storage)**
-🔹 **Goal**: Gather news articles from various sources and store them.  
-🔹 **Sub-pipelines**:
-- **API-based Loader**: Fetch articles from **NewsAPI** (or other APIs like NYTimes, Guardian, Bing News).
-- **File-based Loader**: Allow users to upload `.pdf`, `.txt`, `.html` files for processing.
-- **Web Scraping (Optional)**: Use `BeautifulSoup` or `Scrapy` if APIs do not cover certain sources.
+## Project Overview
 
-🔹 **Storage Format**:
-- Store raw data in **CSV** or **JSON** format.
-- Organize metadata fields (title, content, URL, source, published date).
+This project implements a **Retrieval-Augmented Generation (RAG)** pipeline for daily news summarization and keyword-based analysis. It combines web scraping, keyword extraction, vector search, and Large Language Model (LLM) capabilities to generate insightful, grounded news summaries.
 
----
+## Pipeline Architecture
 
-### **2️⃣ Data Preparation (Cleaning & Processing)**
-🔹 **Goal**: Ensure high-quality, structured input for retrieval and summarization.  
-🔹 **Sub-pipelines**:
-1. **Text Cleaning**:
-   - Remove unwanted characters, boilerplate text, and advertisements.
-   - Normalize text (lowercase, remove punctuation, etc.).
-   - Remove HTML tags and special symbols.
+The system operates through the following stages:
 
-2. **Deduplication**:
-   - Eliminate duplicate news articles and redundant sentences.
-   - Use fuzzy matching (e.g., `fuzzywuzzy` library) for similarity checking.
+### 1. News Retrieval & Scraping
 
-3. **Language Detection & Filtering**:
-   - Keep only user-specified languages (`langdetect` library).
+* **Tools**: `requests`, `BeautifulSoup`
+* **Functionality**:
 
-4. **Named Entity Recognition (NER) & Topic Extraction**:
-   - Extract key topics (`KeyBERT` or `spaCy` for Named Entity Recognition).
+  * Fetches daily news articles from online sources based on customizable queries.
+  * Supports Boolean operators like `AND`, `OR`, `NOT` for precise filtering.
+  * Extracted fields include title, source, publication date, and content.
+  * Saves the results to structured CSV files.
 
-5. **Chunking**:
-   - Split long articles into smaller, meaningful chunks.
-   - Ensure slight chunk overlap to maintain context.
+### 2. Data Ingestion & Preprocessing
 
-6. **Annotation**:
-   - Label chunks with metadata (source, keywords, publication date).
+* **Tools**: `pandas`, `os`, `dotenv`
+* **Functionality**:
 
----
+  * Loads saved news articles from CSV files.
+  * Prepares textual data for embedding and semantic processing.
 
-### **3️⃣ Data Embedding & Indexing (Vectorization)**
-🔹 **Goal**: Convert processed text into vector representations for retrieval.  
-🔹 **Sub-pipelines**:
-1. **Embeddings Generation**:
-   - Use `OpenAI's text-embedding-ada-002` or `sentence-transformers`.
-   - Generate vector representations for news articles.
+### 3. Keyword Extraction
 
-2. **Vector Database Storage**:
-   - Store embeddings and metadata in a **vector database** like Pinecone, FAISS, or Weaviate.
-   - Enable efficient semantic search for retrieving relevant news articles.
+* **Tools**: `KeyBERT`
+* **Functionality**:
 
----
+  * Extracts significant keywords and phrases from each news article.
+  * Facilitates topical analysis and enhances search relevance.
 
-### **4️⃣ Retrieval (Fetching Relevant News)**
-🔹 **Goal**: Retrieve the most relevant news articles based on user queries.  
-🔹 **Sub-pipelines**:
-1. **User Query Handling**:
-   - Accept queries from users in natural language.
-   - Convert multi-word queries (`machine learning` → `machine_learning`) for better API compatibility.
+### 4. Semantic Search with FAISS
 
-2. **Vector Search & Ranking**:
-   - Search for semantically similar articles using vector embeddings.
-   - Rank retrieved articles based on relevance and recency.
+* **Tools**: `faiss`, `numpy`, `sentence-transformers`
+* **Functionality**:
 
----
+  * Generates dense embeddings for news articles using `SentenceTransformer`.
+  * Builds a FAISS vector index for efficient similarity search.
+  * Enables fast retrieval of contextually relevant articles.
 
-### **5️⃣ Summarization (LLM-based)**
-🔹 **Goal**: Generate personalized news summaries.  
-🔹 **Sub-pipelines**:
-1. **Summarization Model**:
-   - Use `LangChain` with an LLM (e.g., GPT-4, OpenAI API).
-   - Generate summaries based on retrieved articles.
+### 5. Retrieval-Augmented Generation (RAG)
 
-2. **Personalization**:
-   - Adjust summary length (short/medium/long).
-   - Include/exclude specific news sources or topics.
+* **Tools**: `openai`, `langchain`, `PromptTemplate`, `ChatOpenAI`
+* **Functionality**:
 
----
+  * Retrieves top relevant articles from FAISS based on user queries.
+  * Constructs prompts by combining user input with retrieved context.
+  * Utilizes OpenAI's LLM via LangChain to generate summaries or insights.
+  * Ensures responses are grounded in factual retrieved content.
 
-### **6️⃣ User Interface & Interaction**
-🔹 **Goal**: Provide a user-friendly way to fetch and view news summaries.  
-🔹 **Sub-pipelines**:
-1. **Web App / Chatbot Interface**:
-   - Build a simple **Flask/FastAPI** backend or a chatbot interface.
-   - Display summarized news interactively.
+### 6. Additional Processing Features
 
-2. **Real-time Updates**:
-   - Refresh news summaries periodically.
-   - Fetch breaking news when available.
+* **Language Detection**: Uses `langdetect` to handle multilingual news sources.
+* **Text Formatting**: Implements `textwrap` for clean console or file outputs.
+* **Fuzzy Matching**: Applies `fuzzywuzzy` to compare and validate text similarity.
+* **NLP Utilities**: Includes `spacy` for linguistic processing (optional).
 
----
+## Technology Stack
 
-### **7️⃣ Deployment & Automation**
-🔹 **Goal**: Ensure the pipeline runs automatically and efficiently.  
-🔹 **Sub-pipelines**:
-1. **Workflow Automation**:
-   - Use **LangChain** to integrate ingestion, retrieval, and summarization into a seamless pipeline.
-   - Automate API calls and summarization at regular intervals.
+| Category              | Tools/Packages                    |
+| --------------------- | --------------------------------- |
+| Web Scraping          | `requests`, `BeautifulSoup`       |
+| Data Handling         | `pandas`, `os`, `dotenv`          |
+| NLP & Text Processing | `spacy`, `langdetect`, `textwrap` |
+| Keyword Extraction    | `KeyBERT`                         |
+| Semantic Embeddings   | `sentence-transformers`           |
+| Vector Search         | `faiss`, `numpy`                  |
+| String Matching       | `fuzzywuzzy`                      |
+| LLM & RAG Framework   | `openai`, `langchain`             |
 
-2. **Deployment**:
-   - Deploy the summarization service using **Docker + Cloud (AWS/GCP)**.
-   - Expose an API for user interaction.
+## Setup Instructions
 
----
+1. **Install Dependencies**
 
-### **📌 Summary of the Full Pipeline**
-✅ **Data Ingestion** → APIs, File Uploads, Scraping  
-✅ **Data Preparation** → Cleaning, Deduplication, NER, Chunking  
-✅ **Embedding & Indexing** → Convert text into vector embeddings  
-✅ **Retrieval** → Retrieve relevant news articles based on user queries  
-✅ **Summarization** → Generate concise, personalized summaries using LLM  
-✅ **User Interface** → Web App, Chatbot, or API  
-✅ **Deployment** → Automate & deploy the pipeline  
+   ```bash
+   pip install -r requirements.txt
+   python -m spacy download en
+   ```
+2. **Environment Variables**
 
-🚀 **Next Step**: Move to **Data Cleaning & Preprocessing**!
+   * Create a `.env` file with necessary API keys, e.g.:
+
+     ```
+     OPENAI_API_KEY=your_openai_key_here
+     ```
+
+## Usage Guide
+
+* Run the notebook step-by-step:
+
+  1. Scrape or load news articles.
+  2. Perform keyword extraction.
+  3. Build the FAISS index.
+  4. Enter queries to retrieve and summarize relevant news.
+
+## Example Workflow
+
+```python
+news_fetcher = NewsFetcher(api_key="...")
+news_fetcher.fetch_news(query="Tech AND AI")
+news_fetcher.save_to_csv("daily_news.csv")
+
+indexer = NewsIndexer("daily_news.csv")
+indexer.build_index()
+
+rag_agent = NewsRAG(indexer)
+summary = rag_agent.query("Latest AI breakthroughs")
+print(summary)
+```
+
+## Conclusion
+
+This system provides an end-to-end pipeline for automating news monitoring, summarization, and topical analysis using modern RAG techniques grounded in LLM and vector search capabilities.
